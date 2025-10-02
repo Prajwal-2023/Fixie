@@ -1,73 +1,123 @@
-# Welcome to your Lovable project
+# 🛠️ Fixie — Service Desk Troubleshooter Assistant
 
-## Project info
+Fixie is an AI-powered assistant designed for **L1 Service Desk Analysts**.  
+It helps agents quickly diagnose user issues, provide **step-by-step admin-level resolutions**, generate **ticket-ready work notes**, and suggest **escalation paths** when needed.  
 
-**URL**: https://lovable.dev/projects/ddb6763a-3609-4e45-b6bf-11ecb1d4c33e
+The assistant is meant to plug into existing ITSM platforms (like **ServiceNow, BMC Remedy, Jira Service Management, Freshservice**) or run as a standalone web app.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
+- 🎯 **Smart Troubleshooting** — Generates on-point, admin-level resolution steps for common IT issues.  
+- 📝 **Auto Work Notes** — Creates concise, ticket-ready notes for service desk logging.  
+- ❓ **Follow-Up Questions** — Suggests what additional info to ask if data is missing.  
+- 🚦 **Escalation Guidance** — Defines when and where to escalate (L2 / Network / Vendor).  
+- ⏱️ **Time-to-Resolution Estimate** — Quick ETA to set user expectations.  
+- 🎨 **Modern UI (React + Vite)** — Simple, agent-friendly interface with **dark/light theme switcher**.  
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ddb6763a-3609-4e45-b6bf-11ecb1d4c33e) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 🏗️ Project Structure
+```
+fixie-service-desk/
+├── src/
+│   ├── App.jsx          # Main React app
+│   ├── components/      # UI components
+│   ├── themes/          # Theme switcher styles
+│   ├── assets/          # Icons, images
+│   └── prompts/
+│       └── fixie_troubleshooter_v2.json  # AI system prompt
+├── public/              # Static files
+├── package.json
+└── README.md
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🚀 Getting Started
 
-**Use GitHub Codespaces**
+### 1. Clone the Repoa
+```bash
+git clone https://github.com/yourusername/fixie-service-desk.git
+cd fixie-service-desk
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-## What technologies are used for this project?
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Your app will be available at **http://localhost:5173/** (default Vite port).
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## ⚡ How It Works
+1. The **agent** enters:
+   - `issue` (short problem label)
+   - `symptoms` (user-reported details)
+   - `device_info` (OS/app/device model — optional)
+   - `steps_taken` (what’s already tried)
 
-## How can I deploy this project?
+2. The **Fixie prompt** (`fixie_troubleshooter_v2.json`) sends these inputs to an LLM.  
+3. The LLM returns structured JSON with:
+   - Root cause
+   - Step-by-step resolution
+   - Work notes
+   - Escalation guidance
+   - ETA + Confidence score  
 
-Simply open [Lovable](https://lovable.dev/projects/ddb6763a-3609-4e45-b6bf-11ecb1d4c33e) and click on Share -> Publish.
+4. The React UI parses the JSON and shows it in a **clean, modern panel** for the agent.  
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 🧩 Example
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Input:
+```json
+{
+  "issue": "Headphones not working",
+  "symptoms": "No audio in Teams, device shows connected in Windows",
+  "device_info": "Windows 11, Teams v1.6, USB Headset Model X",
+  "steps_taken": "Restarted Teams"
+}
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Output:
+```json
+{
+  "root_cause": "Teams audio device not mapped to headset.",
+  "resolution_steps": [
+    "Open Teams → Settings → Devices → select 'USB Headset Model X'.",
+    "Run 'Make a test call' in Teams.",
+    "Open Windows Sound Settings → confirm headset as default input/output.",
+    "Clear Teams cache: %appdata%/Microsoft/Teams → restart Teams."
+  ],
+  "work_note": "Headset not working in Teams. Updated device settings, cleared cache. Audio restored. Resolved.",
+  "follow_up_questions": [
+    "Does issue occur in other apps?",
+    "Is headset USB or Bluetooth?",
+    "Was there a recent driver update?"
+  ],
+  "escalation": { "when": "If still fails after cache clear & driver update.", "to": "Level 2 — Device Support" },
+  "eta": "5–15 minutes",
+  "confidence": 92
+}
+```
+
+---
+
+## 🛡️ Roadmap
+- ✅ Core troubleshooting JSON template  
+- ✅ React UI with theme switcher  
+- 🔄 OS-specific troubleshooting (Windows, macOS, Linux)  
+- 🔄 Integration with ServiceNow / Jira APIs  
+- 🔄 Knowledge Base auto-suggestions  
+
+---
+
+## 📜 License
+MIT License © 2025 — Built with ❤️ to make Service Desk agents faster & happier.
