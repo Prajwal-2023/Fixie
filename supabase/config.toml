@@ -1,0 +1,4 @@
+project_id = "lsgdmlyzrofmwxajdiig"
+
+[functions.fixie-troubleshoot]
+verify_jwt = false
