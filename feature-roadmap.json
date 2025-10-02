@@ -1,0 +1,191 @@
+{
+  "feature_categories": {
+    "Agent Productivity": [
+      {
+        "name": "Quick Templates",
+        "description": "Pre-filled issue templates for common problems (printer, network, password reset).",
+        "example": "Select 'Printer Issues' → Auto-fills device info fields and common symptoms."
+      },
+      {
+        "name": "Command Copy Buttons",
+        "description": "One-click copy for PowerShell/CMD commands and registry edits in resolution steps.",
+        "example": "Copy: sfc /scannow or ipconfig /flushdns with tooltip showing what it does."
+      },
+      {
+        "name": "Ticket Export",
+        "description": "Export diagnosis as ServiceNow/Jira-ready ticket with all fields populated.",
+        "example": "Generate ticket: Title, Description, Resolution Steps, Work Notes, Priority."
+      },
+      {
+        "name": "Bulk Diagnosis",
+        "description": "Upload CSV of similar issues and get batch troubleshooting results.",
+        "example": "Upload 50 'Teams audio issues' → Get resolution matrix for all."
+      },
+      {
+        "name": "Agent Shortcuts",
+        "description": "Keyboard shortcuts for common actions (Ctrl+Enter to submit, Ctrl+C for steps).",
+        "example": "Alt+1 = Copy resolution steps, Alt+2 = Copy work note, Esc = Clear form."
+      },
+      {
+        "name": "Recent Issues Cache",
+        "description": "Quick access to last 10 diagnosed issues for pattern recognition.",
+        "example": "Today: 8 Teams audio issues → Suggest checking Windows audio drivers first."
+      }
+    ],
+    "Intelligence": [
+      {
+        "name": "OS-Specific Fixes",
+        "description": "Detect Windows/macOS/Linux from device info and provide tailored resolution steps.",
+        "example": "Windows 11 → Use Settings app paths, macOS → System Preferences navigation."
+      },
+      {
+        "name": "Confidence Calibration",
+        "description": "Learn from agent feedback to improve confidence scoring accuracy.",
+        "example": "Agent marks 85% confidence solution as 'didn't work' → Adjust future similar cases."
+      },
+      {
+        "name": "Smart Escalation",
+        "description": "Predict escalation likelihood based on issue complexity and user skill level.",
+        "example": "Complex AD issue + Junior agent → 90% escalation probability → Pre-alert L2."
+      },
+      {
+        "name": "Pattern Detection",
+        "description": "Identify trending issues across the organization for proactive alerts.",
+        "example": "15 VPN issues in 2 hours → Alert: Possible network outage, check infrastructure."
+      },
+      {
+        "name": "Solution Validation",
+        "description": "Cross-reference proposed solutions with recent successful resolutions.",
+        "example": "Proposed fix matches 3 successful resolutions from last week → Confidence +15%."
+      },
+      {
+        "name": "Multi-Language Support",
+        "description": "Generate resolutions in agent's preferred language for global teams.",
+        "example": "Spanish agent → Resolution steps in Spanish, technical terms in English."
+      }
+    ],
+    "UI_UX": [
+      {
+        "name": "Advanced Search",
+        "description": "Search through previous diagnoses with filters (date, confidence, issue type).",
+        "example": "Find all 'printer' issues from 'last week' with 'confidence > 80%'."
+      },
+      {
+        "name": "Agent Dashboard",
+        "description": "Personal stats showing resolution rate, average time, trending issues.",
+        "example": "Today: 12 resolved, 2 escalated, 8.5min avg time, trending: Teams issues."
+      },
+      {
+        "name": "Progressive Disclosure",
+        "description": "Show basic form first, reveal advanced fields only when needed.",
+        "example": "Start with Issue + Symptoms, expand to Device Info if confidence < 70%."
+      },
+      {
+        "name": "Mobile Responsive",
+        "description": "Full functionality on tablets and phones for field agents.",
+        "example": "Technician at user's desk can run diagnosis on tablet while troubleshooting."
+      },
+      {
+        "name": "Voice Input",
+        "description": "Speak symptoms and issue details instead of typing.",
+        "example": "Hold mic button: 'User can't print to HP LaserJet, getting error code 49'."
+      },
+      {
+        "name": "Split View Mode",
+        "description": "Show form and results side-by-side on wide screens.",
+        "example": "Left: Issue form, Right: Live diagnosis results as you type."
+      }
+    ],
+    "Business Value": [
+      {
+        "name": "Resolution Analytics",
+        "description": "Management dashboard with resolution rates, escalation trends, agent performance.",
+        "example": "95% printer issues resolved at L1, 23% Teams issues escalated → Focus training."
+      },
+      {
+        "name": "Cost Tracking",
+        "description": "Calculate time saved vs traditional troubleshooting and escalation costs.",
+        "example": "Fixie saved 120 hours this month → $3,600 labor cost reduction."
+      },
+      {
+        "name": "Compliance Logging",
+        "description": "Audit trail of all actions for ITIL/ISO compliance requirements.",
+        "example": "Who diagnosed what, when, resolution taken, outcome → Full audit log."
+      },
+      {
+        "name": "SLA Tracking",
+        "description": "Monitor resolution times against SLA commitments.",
+        "example": "P1 issues: 95% resolved within 15min SLA, P2: 87% within 1hr SLA."
+      },
+      {
+        "name": "Knowledge Mining",
+        "description": "Extract successful patterns to build organizational knowledge base.",
+        "example": "Top 10 Windows 11 fixes that work 90%+ of time → KB article auto-draft."
+      },
+      {
+        "name": "Client Reporting",
+        "description": "Generate monthly reports for outsourcing clients showing service quality.",
+        "example": "Accenture Report: 1,247 issues resolved, 94% success rate, 6.2min avg time."
+      }
+    ],
+    "Future_Proof": [
+      {
+        "name": "Slack/Teams Bot",
+        "description": "Use Fixie directly in chat apps with slash commands.",
+        "example": "/fixie printer not working → Get diagnosis in chat thread."
+      },
+      {
+        "name": "Self-Service Portal",
+        "description": "End users can run basic diagnosis before contacting support.",
+        "example": "Employee portal: 'My headset isn't working' → Get 3 self-help steps."
+      },
+      {
+        "name": "API Integration",
+        "description": "Connect with ServiceNow, Jira, Zendesk for automatic ticket creation.",
+        "example": "Fixie diagnosis → Auto-create ServiceNow incident with all details filled."
+      },
+      {
+        "name": "AR Guidance",
+        "description": "Augmented reality overlays for complex hardware troubleshooting.",
+        "example": "Point phone at router → AR shows which cables to check and LED meanings."
+      },
+      {
+        "name": "Predictive Maintenance",
+        "description": "Analyze device data to predict failures before they happen.",
+        "example": "Printer usage patterns → 'Replace toner in 3 days' alert."
+      },
+      {
+        "name": "Multi-Tenant SaaS",
+        "description": "White-label solution for different outsourcing companies.",
+        "example": "Wipro branding, TCS custom fields, Accenture compliance rules → Same core."
+      }
+    ]
+  },
+  "roadmap": {
+    "MVP": [
+      "Quick Templates",
+      "Command Copy Buttons", 
+      "OS-Specific Fixes",
+      "Advanced Search",
+      "Agent Dashboard"
+    ],
+    "Advanced": [
+      "Ticket Export",
+      "Confidence Calibration",
+      "Resolution Analytics",
+      "Smart Escalation",
+      "Progressive Disclosure",
+      "Cost Tracking"
+    ],
+    "Enterprise": [
+      "Bulk Diagnosis",
+      "API Integration",
+      "Compliance Logging",
+      "Self-Service Portal",
+      "Slack/Teams Bot",
+      "Multi-Tenant SaaS",
+      "Client Reporting",
+      "Knowledge Mining"
+    ]
+  }
+}

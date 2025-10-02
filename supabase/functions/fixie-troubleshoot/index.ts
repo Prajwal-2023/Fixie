@@ -9,17 +9,19 @@ const SYSTEM_PROMPT = `You are Fixie — a calm, ultra-helpful L1 service desk a
 
 Task:
 1. Diagnose the most likely root cause (1–2 lines, avoid fluff).
-2. Provide 4–8 **admin-level, actionable, copy-pasteable** resolution steps. Always start with simplest checks (settings, restarts) and escalate logically to deeper admin actions (driver reset, cache clear, policy check).
-3. Each step should be numbered, clear, and directly executable by L1 staff.
-4. Produce a short, ticket-ready work note (3–6 lines) summarizing issue, actions, result, and status.
-5. List up to 3 crisp follow-up questions if info is missing.
-6. State clear escalation criteria (when to escalate, to which team).
-7. Provide estimated time-to-resolution (short, e.g., "5–15 min") and confidence score (0–100).
-8. If any variable is "unknown" or not provided, explicitly request it in follow_up_questions.
+2. Create a brief, user-friendly summary of the issue (1 line for quick reference).
+3. Provide 4–8 **admin-level, actionable, copy-pasteable** resolution steps. Always start with simplest checks (settings, restarts) and escalate logically to deeper admin actions (driver reset, cache clear, policy check).
+4. Each step should be numbered, clear, and directly executable by L1 staff.
+5. Produce a short, ticket-ready work note (3–6 lines) summarizing issue, actions, result, and status.
+6. List up to 3 crisp follow-up questions if info is missing.
+7. State clear escalation criteria (when to escalate, to which team).
+8. Provide estimated time-to-resolution (short, e.g., "5–15 min") and confidence score (0–100).
+9. If any variable is "unknown" or not provided, explicitly request it in follow_up_questions.
 
 You MUST respond with ONLY valid JSON matching this exact structure:
 {
   "root_cause": string,
+  "short_note": string,
   "resolution_steps": [string],
   "work_note": string,
   "follow_up_questions": [string],
@@ -36,14 +38,27 @@ serve(async (req) => {
   try {
     console.log("Fixie troubleshoot function invoked");
     
-    const { issue, symptoms, device_info = "unknown", steps_taken = "none" } = await req.json();
+    const requestData = await req.json();
+    const { issue, symptoms, device_info = "unknown", steps_taken = "none", regenerate = false, original_issue, user_question, current_steps } = requestData;
 
-    if (!issue || !symptoms) {
-      console.error("Missing required fields: issue or symptoms");
-      return new Response(
-        JSON.stringify({ error: "Issue and symptoms are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Handle regeneration request
+    if (regenerate) {
+      if (!original_issue || !user_question || !current_steps) {
+        console.error("Missing required fields for regeneration");
+        return new Response(
+          JSON.stringify({ error: "Original issue, user question, and current steps are required for regeneration" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      // Handle normal request
+      if (!issue || !symptoms) {
+        console.error("Missing required fields: issue or symptoms");
+        return new Response(
+          JSON.stringify({ error: "Issue and symptoms are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -55,12 +70,33 @@ serve(async (req) => {
       );
     }
 
-    const userPrompt = `Issue: ${issue}
+    let userPrompt;
+    let systemPrompt = SYSTEM_PROMPT;
+
+    if (regenerate) {
+      systemPrompt = `You are Fixie — a calm, ultra-helpful L1 service desk assistant. 
+
+The user has asked for modified resolution steps based on a specific question. 
+Provide ONLY updated resolution steps that address their specific concern while maintaining the same structure and quality.
+
+You MUST respond with ONLY valid JSON matching this exact structure:
+{
+  "resolution_steps": [string]
+}`;
+
+      userPrompt = `Original Issue: ${original_issue}
+Current Resolution Steps: ${JSON.stringify(current_steps)}
+User's Specific Question/Concern: ${user_question}
+
+Please provide updated resolution steps that specifically address the user's question while maintaining the same quality and structure.`;
+    } else {
+      userPrompt = `Issue: ${issue}
 Symptoms: ${symptoms}
 Device Info: ${device_info}
 Steps Already Taken: ${steps_taken}
 
 Please provide a diagnosis and troubleshooting guidance.`;
+    }
 
     console.log("Calling Lovable AI Gateway with prompt:", userPrompt.substring(0, 100) + "...");
 
@@ -73,7 +109,7 @@ Please provide a diagnosis and troubleshooting guidance.`;
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
         temperature: 0.7,
@@ -133,12 +169,22 @@ Please provide a diagnosis and troubleshooting guidance.`;
     }
 
     // Validate the response structure
-    if (!result.root_cause || !result.resolution_steps || !result.confidence) {
-      console.error("Invalid response structure:", result);
-      return new Response(
-        JSON.stringify({ error: "Invalid response structure from AI" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (regenerate) {
+      if (!result.resolution_steps) {
+        console.error("Invalid regeneration response structure:", result);
+        return new Response(
+          JSON.stringify({ error: "Invalid response structure from AI" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else {
+      if (!result.root_cause || !result.resolution_steps || !result.confidence) {
+        console.error("Invalid response structure:", result);
+        return new Response(
+          JSON.stringify({ error: "Invalid response structure from AI" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     console.log("Returning successful response");

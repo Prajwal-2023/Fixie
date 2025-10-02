@@ -115,3 +115,20 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .backdrop-blur-md {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .supports-backdrop-blur\:bg-background\/60 {
+    background-color: hsl(var(--background) / 0.6);
+  }
+  
+  @supports (backdrop-filter: blur(1px)) {
+    .supports-\[backdrop-filter\]\:bg-background\/60 {
+      background-color: hsl(var(--background) / 0.6);
+    }
+  }
+}
