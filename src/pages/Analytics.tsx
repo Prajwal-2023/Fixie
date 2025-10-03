@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +26,13 @@ import {
   Filter,
   Calendar,
   ArrowLeft,
-  Home
+  Home,
+  RefreshCw,
+  Database
 } from "lucide-react";
 import { toast } from "sonner";
 import { FeedbackData } from "@/components/FeedbackForm";
+import { useTickets } from "@/hooks/useTickets";
 
 export interface AnalyticsData {
   total_tickets: number;
@@ -52,36 +55,51 @@ import { useNavigate } from "react-router-dom";
 
 export function AnalyticsPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState<AnalyticsData | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Worked" | "Routed">("All");
   const [filteredTickets, setFilteredTickets] = useState<FeedbackData[]>([]);
 
-  useEffect(() => {
-    const loadData = () => {
-      const savedFeedback = localStorage.getItem('fixie-feedback') || '[]';
-      const tickets: FeedbackData[] = JSON.parse(savedFeedback);
-      
-      const total_tickets = tickets.length;
-      const worked_count = tickets.filter(t => t.status === 'Worked').length;
-      const routed_count = tickets.filter(t => t.status === 'Routed').length;
-      const success_rate = total_tickets > 0 ? (worked_count / total_tickets) * 100 : 0;
-      
-      const analyticsData: AnalyticsData = {
-        total_tickets,
-        worked_count,
-        routed_count,
-        success_rate,
-        top_working_resolutions: [],
-        trending_issues: [],
-        tickets
-      };
-      
-      setData(analyticsData);
-      setFilteredTickets(analyticsData.tickets);
+  // Use the new useTickets hook
+  const { 
+    tickets, 
+    loading, 
+    error, 
+    refetch, 
+    isSupabaseConnected 
+  } = useTickets({
+    sortBy: 'date',
+    sortOrder: 'desc',
+    autoRefetch: false
+  });
+
+  // Convert Supabase tickets to FeedbackData format for compatibility
+  const feedbackTickets: FeedbackData[] = useMemo(() => 
+    tickets.map(ticket => ({
+      id: ticket.id,
+      ticket_id: ticket.ticket_id,
+      issue: ticket.issue,
+      resolution: ticket.resolution,
+      status: ticket.status as "Worked" | "Routed",
+      confidence: ticket.confidence,
+      date: ticket.date,
+      agent_notes: ticket.agent_notes || ''
+    })), [tickets]
+  );
+
+  // Calculate analytics data from tickets
+  const data: AnalyticsData | null = useMemo(() => {
+    if (feedbackTickets.length === 0) return null;
+    
+    return {
+      total_tickets: feedbackTickets.length,
+      worked_count: feedbackTickets.filter(t => t.status === 'Worked').length,
+      routed_count: feedbackTickets.filter(t => t.status === 'Routed').length,
+      success_rate: Math.round((feedbackTickets.filter(t => t.status === 'Worked').length / feedbackTickets.length) * 100),
+      top_working_resolutions: [],
+      trending_issues: [],
+      tickets: feedbackTickets
     };
-    loadData();
-  }, []);
+  }, [feedbackTickets]);
 
   useEffect(() => {
     if (!data) return;
@@ -181,17 +199,78 @@ export function AnalyticsPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={handleExportCSV} className="gap-2">
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Connection Status */}
+              <Badge 
+                variant={isSupabaseConnected ? 'default' : 'destructive'}
+                className="flex items-center gap-1"
+              >
+                <Database className="h-3 w-3" />
+                {isSupabaseConnected ? 'Supabase' : 'Local Storage'}
+              </Badge>
+              
+              {/* Refresh Button */}
+              <Button 
+                onClick={refetch} 
+                disabled={loading}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              
+              <Button onClick={handleExportCSV} className="gap-2">
+                <Download className="h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+              <p className="text-lg font-medium">Loading analytics...</p>
+              <p className="text-sm text-muted-foreground">Fetching tickets from {isSupabaseConnected ? 'Supabase' : 'local storage'}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <Card className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-destructive/10 text-destructive">
+                <XCircle className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-destructive">Error loading analytics</h3>
+                <p className="text-sm text-muted-foreground">{error}</p>
+                <Button 
+                  onClick={refetch} 
+                  size="sm" 
+                  variant="outline" 
+                  className="mt-2 gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Main Content - Only show when not loading and no error */}
+        {!loading && !error && data && (
+          <>
+            {/* Overview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Card className="p-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
@@ -377,6 +456,8 @@ export function AnalyticsPage() {
             </table>
           </div>
         </Card>
+          </>
+        )}
       </main>
     </div>
   );

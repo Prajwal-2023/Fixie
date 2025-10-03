@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, XCircle, MessageSquare, Ticket } from "lucide-react";
+import { CheckCircle, XCircle, MessageSquare, Ticket, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { insertTicket, type TicketData } from "@/lib/supabase-tickets";
 
 export interface FeedbackData {
   id?: string;
@@ -47,23 +48,33 @@ export function FeedbackForm({ issue, resolution, confidence, onFeedbackSubmitte
     setIsSubmitting(true);
 
     try {
-      const feedbackData: Omit<FeedbackData, "id" | "date"> = {
+      // Prepare ticket data for Supabase
+      const ticketData: Omit<TicketData, "id"> = {
         ticket_id: ticketId.trim(),
         issue: issue,
         resolution: resolution,
         status: selectedStatus,
         confidence: confidence,
+        date: new Date().toISOString(),
         agent_notes: agentNotes.trim() || undefined
       };
 
-      // Save to localStorage
+      // Validate resolution is not empty
+      if (!resolution || resolution.trim() === '') {
+        toast.error('Resolution cannot be empty');
+        return;
+      }
+
+      // Insert into Supabase tickets table
+      const insertedTicket = await insertTicket(ticketData);
+      
+      // Also save to localStorage as backup
       const savedFeedback = localStorage.getItem('fixie-feedback') || '[]';
       const feedbackList = JSON.parse(savedFeedback);
       
       const newFeedback = {
-        ...feedbackData,
-        id: Date.now().toString(),
-        date: new Date().toISOString()
+        ...ticketData,
+        id: insertedTicket.id
       };
       
       feedbackList.push(newFeedback);
@@ -71,8 +82,8 @@ export function FeedbackForm({ issue, resolution, confidence, onFeedbackSubmitte
       
       toast.success(
         selectedStatus === "Worked" 
-          ? "✅ Great! Resolution marked as successful" 
-          : "📋 Feedback saved. Consider escalation if needed"
+          ? `✅ Ticket ${insertedTicket.ticket_id} saved! Resolution marked as successful` 
+          : `📋 Ticket ${insertedTicket.ticket_id} saved to Supabase. Consider escalation if needed`
       );
       
       onFeedbackSubmitted(selectedStatus);
@@ -118,6 +129,41 @@ export function FeedbackForm({ issue, resolution, confidence, onFeedbackSubmitte
                 onChange={(e) => setTicketId(e.target.value)}
                 className="mt-1"
               />
+            </div>
+
+            {/* Resolution Length Indicator */}
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Resolution Length Check
+                </Label>
+                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                  resolution.length >= 500 
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                }`}>
+                  {resolution.length}/500 chars
+                </span>
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      resolution.length >= 500 
+                        ? 'bg-green-500' 
+                        : resolution.length >= 250 
+                        ? 'bg-orange-500' 
+                        : 'bg-red-500'
+                    }`}
+                    style={{ width: `${Math.min((resolution.length / 500) * 100, 100)}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 mt-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Characters: {resolution.length}
+                </p>
+              </div>
             </div>
             
             <div>

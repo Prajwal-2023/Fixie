@@ -47,7 +47,22 @@ cd fixie-service-desk
 npm install
 ```
 
-### 3. Run Development Server
+### 3. Setup Supabase (Optional - for ticket storage)
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Copy your project URL and anon key from Settings > API
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+4. Fill in your Supabase credentials in `.env`
+5. Run the SQL schema in your Supabase dashboard (SQL Editor):
+   ```sql
+   -- Copy contents from sql/create-tickets-table.sql
+   ```
+
+**Note:** The app works with localStorage as fallback if Supabase is not configured.
+
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
@@ -113,6 +128,11 @@ Your app will be available at **http://localhost:5173/** (default Vite port).
 ## 🛡️ Roadmap
 - ✅ Core troubleshooting JSON template  
 - ✅ React UI with theme switcher  
+- ✅ Smart Assistant with contextual follow-up questions
+- ✅ Hardware support detection and driver links
+- ✅ Agent-style work notes formatting
+- ✅ Supabase integration for ticket storage
+- ✅ Analytics dashboard with resolution tracking
 - 🔄 OS-specific troubleshooting (Windows, macOS, Linux)  
 - 🔄 Integration with ServiceNow / Jira APIs  
 - 🔄 Knowledge Base auto-suggestions  

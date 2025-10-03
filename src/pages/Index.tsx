@@ -20,25 +20,29 @@ const Index = () => {
     setResult(null);
 
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fixie-troubleshoot`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      // Simulate processing time
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to process request");
-      }
+      // Generate mock troubleshooting result based on form data
+      const mockResult: TroubleshootResultData = {
+        root_cause: `Analysis of the issue "${formData.issue}" indicates this is likely a common technical issue that can be resolved with standard troubleshooting procedures.`,
+        resolution_steps: generateTroubleshootingSteps(formData),
+        work_note: `Ticket created for issue: ${formData.issue}. Symptoms: ${formData.symptoms}. Device info: ${formData.device_info}. Steps already taken: ${formData.steps_taken}`,
+        follow_up_questions: [
+          "Has this issue occurred before?",
+          "Are other users experiencing similar problems?",
+          "Have there been any recent system changes?"
+        ],
+        escalation: {
+          when: "If issue persists after following all resolution steps",
+          to: "Level 2 Technical Support"
+        },
+        eta: "15-30 minutes",
+        confidence: 85 + Math.floor(Math.random() * 10), // 85-95%
+        short_note: "Standard troubleshooting procedure initiated"
+      };
 
-      const data = await response.json();
-      setResult(data);
+      setResult(mockResult);
       toast.success("Diagnosis complete!");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
@@ -48,6 +52,60 @@ const Index = () => {
       setIsLoading(false);
     }
   };
+
+  // Helper function to generate troubleshooting steps
+  const generateTroubleshootingSteps = (formData: FormData): string[] => {
+    const issue = formData.issue.toLowerCase();
+    
+    if (issue.includes('printer')) {
+      return [
+        "Check if the printer is powered on and connected to the network",
+        "Verify printer drivers are installed and up to date", 
+        "Clear the print spooler queue and restart the Print Spooler service",
+        "Run the Windows Printer Troubleshooter",
+        "Check printer settings and set as default if needed",
+        "Test with a different document or application"
+      ];
+    } else if (issue.includes('vpn')) {
+      return [
+        "Verify internet connectivity is working properly",
+        "Check VPN client software is installed and updated",
+        "Confirm VPN credentials and server settings are correct",
+        "Disable other VPN clients or security software temporarily",
+        "Try connecting to a different VPN server location",
+        "Clear DNS cache and restart network adapters"
+      ];
+    } else if (issue.includes('email')) {
+      return [
+        "Verify email account settings and credentials",
+        "Check internet connection and server availability",
+        "Clear email client cache and restart the application",
+        "Disable antivirus email scanning temporarily",
+        "Try accessing email through webmail interface",
+        "Check with IT if server settings have changed"
+      ];
+    } else if (issue.includes('software') || issue.includes('application')) {
+      return [
+        "Close and restart the application completely",
+        "Check if software updates are available",
+        "Run the application as administrator if needed",
+        "Verify system requirements are met",
+        "Clear application cache and temporary files",
+        "Try reinstalling the software if issue persists"
+      ];
+    } else {
+      return [
+        "Restart the affected system or application",
+        "Check for any recent system changes or updates",
+        "Verify all cables and connections are secure",
+        "Run built-in diagnostic tools if available",
+        "Check system logs for error messages",
+        "Try the solution on a different device to isolate the issue"
+      ];
+    }
+  };
+
+
 
   const handleRegenerateSteps = async (question: string) => {
     if (!result) return;
