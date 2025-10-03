@@ -5,12 +5,10 @@ import type { User, Session } from '@supabase/supabase-js'
 interface Profile {
   id: string
   email: string
-  name: string
-  avatar_url?: string
-  role: 'admin' | 'agent' | 'user'
+  first_name?: string
+  last_name?: string
+  role: 'admin' | 'agent' | 'customer'
   organization_id: string
-  is_active: boolean
-  last_login_at?: string
   created_at: string
   updated_at: string
 }
@@ -76,12 +74,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error fetching profile:', error)
       } else {
         setProfile(data)
-        
-        // Update last login
-        await supabase
-          .from('profiles')
-          .update({ last_login_at: new Date().toISOString() })
-          .eq('id', userId)
       }
     } catch (error) {
       console.error('Error in fetchProfile:', error)
@@ -109,12 +101,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
         options: {
           data: {
-            name: name,
+            full_name: name,
           },
+          emailRedirectTo: window.location.origin,
         },
       })
       return { error }
-    } catch (error) {
+    } catch (error: any) {
       return { error }
     }
   }

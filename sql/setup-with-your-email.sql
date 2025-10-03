@@ -99,10 +99,16 @@ VALUES (
   '#3b82f6'
 );
 
--- 8. Create user signup trigger with YOUR EMAIL FORMAT as admin
+-- 8. Create user signup trigger with YOUR EMAIL FORMAT as admin (AUTO-CONFIRM EMAILS)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
+  -- Auto-confirm the user's email for development
+  UPDATE auth.users 
+  SET email_confirmed_at = NOW()
+  WHERE id = NEW.id;
+  
+  -- Create the profile
   INSERT INTO public.profiles (id, email, name, role, organization_id)
   VALUES (
     NEW.id,

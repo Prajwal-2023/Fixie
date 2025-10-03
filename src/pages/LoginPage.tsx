@@ -13,6 +13,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [demoLoading, setDemoLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -35,8 +36,12 @@ export function LoginPage() {
         if (error) {
           setError(error.message || 'Failed to sign up')
         } else {
-          setSuccess('Account created! Please check your email to verify your account.')
-          setIsLogin(true)
+          // Auto-login after signup since email confirmation is disabled
+          const { error: signInError } = await signIn(email, password)
+          if (signInError) {
+            setSuccess('Account created! You can now sign in.')
+            setIsLogin(true)
+          }
         }
       }
     } catch (err) {
@@ -46,15 +51,32 @@ export function LoginPage() {
     }
   }
 
-  const quickLogin = (role: 'admin' | 'agent' | 'user') => {
+  const quickLogin = async (role: 'admin' | 'agent' | 'user') => {
+    setDemoLoading(true)
+    setError('')
+    setSuccess('')
+
+    // Demo account credentials - simple and fixed
     const credentials = {
-      admin: { email: 'admin@fixie.com', password: 'admin123' },
-      agent: { email: 'agent@fixie.com', password: 'agent123' },
-      user: { email: 'user@fixie.com', password: 'user123' }
+      admin: { email: 'admin@fixie.demo', password: 'admin123' },
+      agent: { email: 'agent@fixie.demo', password: 'agent123' },
+      user: { email: 'user@fixie.demo', password: 'user123' }
     }
-    
-    setEmail(credentials[role].email)
-    setPassword(credentials[role].password)
+
+    const { email, password } = credentials[role]
+
+    try {
+      // Just sign in - accounts should already exist
+      const { error: signInError } = await signIn(email, password)
+      
+      if (signInError) {
+        setError(`Demo account not ready. Please create it first: Email: ${email}, Password: ${password}`)
+      }
+    } catch (err) {
+      setError('Failed to login with demo account')
+    } finally {
+      setDemoLoading(false)
+    }
   }
 
   return (
@@ -82,6 +104,7 @@ export function LoginPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => quickLogin('admin')}
+                disabled={demoLoading}
                 className="text-xs flex flex-col h-auto py-2"
               >
                 <Shield className="w-3 h-3 mb-1" />
@@ -92,6 +115,7 @@ export function LoginPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => quickLogin('agent')}
+                disabled={demoLoading}
                 className="text-xs flex flex-col h-auto py-2"
               >
                 <Headphones className="w-3 h-3 mb-1" />
@@ -102,12 +126,19 @@ export function LoginPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => quickLogin('user')}
+                disabled={demoLoading}
                 className="text-xs flex flex-col h-auto py-2"
               >
                 <Users className="w-3 h-3 mb-1" />
                 User
               </Button>
             </div>
+            {demoLoading && (
+              <p className="text-xs text-center text-gray-500">
+                <Loader2 className="w-3 h-3 inline animate-spin mr-1" />
+                Signing in...
+              </p>
+            )}
           </CardContent>
         </Card>
 
