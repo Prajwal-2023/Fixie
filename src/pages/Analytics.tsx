@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import { FeedbackData } from "@/components/FeedbackForm";
 import { useTickets } from "@/hooks/useTickets";
+import { DeploymentDebugger } from "@/components/DeploymentDebugger";
 
 export interface AnalyticsData {
   total_tickets: number;
@@ -231,6 +232,11 @@ export function AnalyticsPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Debug Component - Remove after fixing deployment */}
+        {import.meta.env.PROD && (
+          <DeploymentDebugger />
+        )}
+        
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
