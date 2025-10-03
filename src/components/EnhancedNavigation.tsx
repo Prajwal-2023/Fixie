@@ -19,9 +19,11 @@ import {
   X,
   Bell,
   User,
-  Zap
+  Zap,
+  LogOut
 } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/hooks/useAuth';
 import { NotificationSystem } from '@/components/NotificationSystem';
 import { KnowledgeBase } from '@/components/KnowledgeBase';
 import { realtimeService } from '@/services/realtime-service';
@@ -29,17 +31,11 @@ import { realtimeService } from '@/services/realtime-service';
 interface EnhancedNavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role: 'admin' | 'agent' | 'user';
-    avatar_url?: string;
-  };
 }
 
-export function EnhancedNavigation({ currentPage, onPageChange, user }: EnhancedNavigationProps) {
+export function EnhancedNavigation({ currentPage, onPageChange }: EnhancedNavigationProps) {
   const { theme, setTheme } = useTheme();
+  const { profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
@@ -105,7 +101,7 @@ export function EnhancedNavigation({ currentPage, onPageChange, user }: Enhanced
 
   // Filter navigation items based on user role
   const visibleItems = navigationItems.filter(item => 
-    !user || item.roles.includes(user.role)
+    !profile || item.roles.includes(profile.role)
   );
 
   const handleNavigation = (pageId: string) => {
@@ -189,20 +185,20 @@ export function EnhancedNavigation({ currentPage, onPageChange, user }: Enhanced
 
           {/* User Profile & Settings */}
           <div className="p-4 border-t">
-            {user && (
+            {profile && (
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.name} className="rounded-full" />
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt={profile.name} className="rounded-full" />
                   ) : (
                     <User className="h-4 w-4 text-primary-foreground" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{user.name}</div>
+                  <div className="text-sm font-medium truncate">{profile.name}</div>
                   <div className="text-xs text-muted-foreground">
                     <Badge variant="outline" className="text-xs">
-                      {user.role}
+                      {profile.role}
                     </Badge>
                   </div>
                 </div>
@@ -218,10 +214,15 @@ export function EnhancedNavigation({ currentPage, onPageChange, user }: Enhanced
                 {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
               
-              <NotificationSystem userId={user?.id} />
+              <NotificationSystem userId={profile?.id} />
               
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={signOut}
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -253,7 +254,7 @@ export function EnhancedNavigation({ currentPage, onPageChange, user }: Enhanced
             >
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <NotificationSystem userId={user?.id} />
+            <NotificationSystem userId={profile?.id} />
           </div>
         </div>
       </header>
@@ -304,26 +305,38 @@ export function EnhancedNavigation({ currentPage, onPageChange, user }: Enhanced
               </nav>
 
               {/* Mobile User Profile */}
-              {user && (
+              {profile && (
                 <div className="p-4 border-t">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                      {user.avatar_url ? (
-                        <img src={user.avatar_url} alt={user.name} className="rounded-full" />
+                      {profile.avatar_url ? (
+                        <img src={profile.avatar_url} alt={profile.name} className="rounded-full" />
                       ) : (
                         <User className="h-5 w-5 text-primary-foreground" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{user.name}</div>
-                      <div className="text-sm text-muted-foreground truncate">{user.email}</div>
+                      <div className="font-medium truncate">{profile.name}</div>
+                      <div className="text-sm text-muted-foreground truncate">{profile.email}</div>
                       <Badge variant="outline" className="text-xs mt-1">
-                        {user.role}
+                        {profile.role}
                       </Badge>
                     </div>
                   </div>
                 </div>
               )}
+              
+              {/* Mobile Logout Button */}
+              <div className="pt-4 border-t">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                  onClick={signOut}
+                >
+                  <LogOut className="mr-3 h-4 w-4" />
+                  Sign Out
+                </Button>
+              </div>
             </div>
           </div>
         </div>
